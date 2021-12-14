@@ -1,0 +1,288 @@
+Public Sub CreateFinalReport()
+
+Call PivotTableCreation
+Call PasteCurrentRegionToReport
+Call CreateIndividualReports
+Call FormatFinalReport
+
+End Sub
+Public Sub CreateVIPReport()
+
+Call PivotTableCreation
+Call PasteCurrentRegionVIPToReport
+Call CreateIndividualVIPReport
+Call FormatFinalReport
+
+End Sub
+
+Public Sub PivotTableCreation()
+
+Dim PSheet As Worksheet
+Dim DSheet As Worksheet
+Dim PCache As PivotCache
+Dim PTable As PivotTable
+Dim PRange As Range
+Dim LastRow As Long
+Dim LastCol As Long
+
+On Error Resume Next
+Application.DisplayAlerts = False
+Worksheets("Pivot Table").Delete
+Sheets.Add before:=ActiveSheet
+ActiveSheet.Name = "Pivot Table"
+Application.DisplayAlerts = True
+Set PSheet = Worksheets("Pivot Table")
+Set DSheet = Worksheets("Input Data GOPD or VIP")
+
+LastRow = DSheet.Cells(Rows.Count, 1).End(xlUp).Row
+LastCol = DSheet.Cells(1, Columns.Count).End(xlToLeft).Column
+Set PRange = DSheet.Cells(1, 1).Resize(LastRow, LastCol)
+
+
+Set PCache = ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:=PRange).CreatePivotTable(TableDestination:=PSheet.Cells(3, 1), TableName:="FMCTable")
+
+Set PTable = PCache.CreatePivotTable(TableDestination:=PSheet.Cells(1, 1), TableName:="FMCTable")
+
+With ActiveSheet.PivotTables("FMCTable").PivotFields("CLINICIAN")
+    .Orientation = xlRowField
+    .Position = 1
+End With
+
+With ActiveSheet.PivotTables("FMCTable").PivotFields("Amount")
+    .Orientation = xlDataField
+    .Position = 1
+    .Function = xlSum
+    .NumberFormat = "#,##0"
+    .Name = "Amount"
+End With
+
+Tableactivesheet.PivotTables("SalesPivotTable").ShowTableStyleRowStripes = trueactivesheet.PivotTables("SalesPivotTable").TableStyle2 = "pivotstylemedium9"
+
+
+
+End Sub
+
+
+Public Sub PasteCurrentRegionToReport()
+
+Worksheets("Pivot Table").Select
+Range("B6").Select
+Selection.CurrentRegion.Copy
+Worksheets("FMC Reports").Select
+Range("B1").Select
+Selection.Offset(2, 0).Select
+ActiveCell.PasteSpecial Paste:=xlPasteAllUsingSourceTheme
+Selection.PasteSpecial Paste:=xlPasteValues
+
+Range("B3").Value = "CLINICIANS"
+Range("C3").Value = "AMOUNT PAID"
+Range("D3").Value = "CLAIM"
+Range("d3").Font.Bold = True
+
+
+Dim x As Integer
+x = 4
+Do While Cells(x, 2).Value <> ""
+Cells(x, 4).Value = (Cells(x, 3).Value / 2) * 0.2
+x = x + 1
+Loop
+
+
+
+End Sub
+
+Public Sub CreateIndividualReports()
+
+Dim y As Integer
+Dim a As Integer
+
+Worksheets("Pivot Table").Select
+
+For y = 4 To Application.WorksheetFunction.Count(Range("b:b")) + 4 - 2
+Worksheets("Pivot Table").Select
+Cells(y, 2).Select
+Application.DoubleClick
+For a = 2 To Application.WorksheetFunction.Count(Range("f:f")) + 2 - 1
+Cells(a, 8).Value = (Cells(a, 6).Value / 2) * 0.2
+Range("h1").Value = "CLAIM"
+Next a
+
+Columns("a:f").AutoFit
+
+Next y
+
+Dim z As Integer
+
+For z = 2 To Worksheets.Count - 2
+Sheets(z).Name = Sheets(z).Cells(2, 7).Value
+Next z
+
+End Sub
+Sub FormatFinalReport()
+'
+' FormatFinalReport Macro
+'
+
+'
+   Worksheets("FMC Reports").Select
+   
+    Range("B3:D3").Select
+    Selection.Font.Bold = True
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .ThemeColor = xlThemeColorLight1
+        .TintAndShade = 0.149998474074526
+        .PatternTintAndShade = 0
+    End With
+    With Selection.Font
+        .ThemeColor = xlThemeColorDark1
+        .TintAndShade = 0
+    End With
+    Cells(Application.WorksheetFunction.CountA(Range("b:b")) + 2, 2).Select
+    Selection.Font.Bold = True
+    Cells(Application.WorksheetFunction.CountA(Range("c:c")) + 2, 3).Select
+    Selection.Font.Bold = True
+    Cells(Application.WorksheetFunction.CountA(Range("d:d")) + 2, 4).Select
+    Selection.Font.Bold = True
+    
+    Range("C4:D10").Select
+    Selection.Style = "Comma"
+    Selection.NumberFormat = "_-* #,##0.0_-;-* #,##0.0_-;_-* ""-""??_-;_-@_-"
+    Selection.NumberFormat = "_-* #,##0_-;-* #,##0_-;_-* ""-""??_-;_-@_-"
+    
+    Cells(Application.WorksheetFunction.CountA(Range("c:c")) + 2, 3).Select
+    
+    Selection.Borders(xlDiagonalDown).LineStyle = xlNone
+    Selection.Borders(xlDiagonalUp).LineStyle = xlNone
+    Selection.Borders(xlEdgeLeft).LineStyle = xlNone
+    With Selection.Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeBottom)
+        .LineStyle = xlDouble
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThick
+    End With
+    Selection.Borders(xlEdgeRight).LineStyle = xlNone
+    Selection.Borders(xlInsideVertical).LineStyle = xlNone
+    Selection.Borders(xlInsideHorizontal).LineStyle = xlNone
+    
+    Cells(Application.WorksheetFunction.CountA(Range("d:d")) + 2, 4).Select
+    
+    Selection.Borders(xlDiagonalDown).LineStyle = xlNone
+    Selection.Borders(xlDiagonalUp).LineStyle = xlNone
+    Selection.Borders(xlEdgeLeft).LineStyle = xlNone
+    With Selection.Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeBottom)
+        .LineStyle = xlDouble
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThick
+    End With
+    Selection.Borders(xlEdgeRight).LineStyle = xlNone
+    Selection.Borders(xlInsideVertical).LineStyle = xlNone
+    Selection.Borders(xlInsideHorizontal).LineStyle = xlNone
+    
+    Cells(Application.WorksheetFunction.CountA(Range("c:c")) + 2, 3).Select
+    
+    Selection.Borders(xlDiagonalDown).LineStyle = xlNone
+    Selection.Borders(xlDiagonalUp).LineStyle = xlNone
+    Selection.Borders(xlEdgeLeft).LineStyle = xlNone
+    With Selection.Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeBottom)
+        .LineStyle = xlDouble
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThick
+    End With
+    With Selection.Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    Selection.Borders(xlInsideVertical).LineStyle = xlNone
+    Selection.Borders(xlInsideHorizontal).LineStyle = xlNone
+    Range("B3:D3").Select
+    With Selection
+        .HorizontalAlignment = xlCenter
+        .VerticalAlignment = xlBottom
+        .WrapText = False
+        .Orientation = 0
+        .AddIndent = False
+        .IndentLevel = 0
+        .ShrinkToFit = False
+        .ReadingOrder = xlContext
+        .MergeCells = False
+    End With
+End Sub
+
+Public Sub CreateIndividualVIPReport()
+
+Dim y As Integer
+Dim a As Integer
+
+Worksheets("Pivot Table").Select
+
+For y = 4 To Application.WorksheetFunction.Count(Range("b:b")) + 4 - 2
+Worksheets("Pivot Table").Select
+Cells(y, 2).Select
+Application.DoubleClick
+For a = 2 To Application.WorksheetFunction.Count(Range("f:f")) + 2 - 1
+Cells(a, 8).Value = (Cells(a, 6).Value / 2) * 0.15
+Range("h1").Value = "CLAIM"
+Next a
+
+Columns("a:f").AutoFit
+
+Next y
+
+Dim z As Integer
+
+For z = 2 To Worksheets.Count - 2
+Sheets(z).Name = Sheets(z).Cells(2, 7).Value
+Next z
+
+End Sub
+
+Public Sub PasteCurrentRegionVIPToReport()
+
+Worksheets("Pivot Table").Select
+Range("B6").Select
+Selection.CurrentRegion.Copy
+Worksheets("FMC Reports").Select
+Range("B1").Select
+Selection.Offset(2, 0).Select
+ActiveCell.PasteSpecial Paste:=xlPasteAllUsingSourceTheme
+Selection.PasteSpecial Paste:=xlPasteValues
+
+Range("B3").Value = "CLINICIANS"
+Range("C3").Value = "AMOUNT PAID"
+Range("D3").Value = "CLAIM"
+Range("d3").Font.Bold = True
+
+
+Dim x As Integer
+x = 4
+Do While Cells(x, 2).Value <> ""
+Cells(x, 4).Value = (Cells(x, 3).Value / 2) * 0.15
+x = x + 1
+Loop
+
+End Sub
+
